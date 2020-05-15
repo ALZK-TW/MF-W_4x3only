@@ -546,7 +546,7 @@ tSensor PRX00 =
     // Tuning  Parameters
 #ifdef NEW_BOARD
     //.ui16ProxThreshold = 7, //10
-    .ui16ProxThreshold =3, //10
+    .ui16ProxThreshold = 15, //10
 #else
     .ui16ProxThreshold = 5,
 #endif
