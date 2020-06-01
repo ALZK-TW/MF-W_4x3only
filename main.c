@@ -103,6 +103,8 @@ volatile uint16_t g_ui16UISessionTimeoutCtr = 1;
 //! \brief The event handler for the numeric keypad sensor.
 //! \param pSensor is a pointer to the calling sensor.
 void numericKeypadHandler(tSensor* pSensor);
+//void numericKeypadHandler1(tSensor* pSensor);
+//void numericKeypadHandler2(tSensor* pSensor);
 
 //! \brief The event handler for the proximity and guard sensor.
 //! \param pSensor is a pointer to the calling sensor.
@@ -136,7 +138,8 @@ bool checkForValidTouch(void)
 #ifdef TX
 //#ifndef RX_INPUT
 #ifdef FLASH_ON
-        P2OUT &= ~BIT6; // turn off tochled
+        //P2OUT &= ~BIT6; // turn off tochled
+        P3OUT &= ~BIT1; // turn off tochled
         bLedStatus = false;
         bStart = true;
         count = 0;
@@ -195,7 +198,17 @@ bool checkForValidTouch(void)
             btnIdex ='#';
 
         btnStr[4] = btnIdex;
-        UART_transmitBufferxx(&btnStr[4], 1);
+        if (count==0)
+        {
+            if (btnStr[4]>=48 && btnStr[4]<=57)
+            {
+                UART_transmitBufferxx(&btnStr[4], 1);
+            }
+            else if (btnStr[4]==42 || btnStr[4]==35)
+            {
+                UART_transmitBufferxx(&btnStr[4], 1);
+            }
+        }
     }
     else
     {
@@ -219,6 +232,12 @@ bool checkForValidTouch(void)
 #endif
 #endif
 #endif
+    /*
+    //P2OUT  |= BIT6; //tochled
+    P3OUT  |= BIT1; //tochled
+    bLedStatus = true;
+    bStart = false;
+    */
     return result;
 }
 
@@ -240,6 +259,7 @@ void Func_Callback_init(void)
             &BTN00,
             &numericKeypadHandler
         );
+
 }
 
 void numericKeypadHandler(tSensor* pSensor)
@@ -252,14 +272,6 @@ void numericKeypadHandler(tSensor* pSensor)
     {
         if(bTouch == false)
             checkForValidTouch();
-        /*
-        if(result)
-        {
-            P2OUT |= BIT6; //tochled
-            bLedStatus = true;
-            bStart = false;
-        }
-        */
     }
     else if((pSensor->bSensorTouch == false) && (pSensor->bSensorPrevTouch ==true))
     {
@@ -276,6 +288,59 @@ void numericKeypadHandler(tSensor* pSensor)
 
 }
 
+/*
+void numericKeypadHandler1(tSensor* pSensor)
+{
+   // bool result;
+    //
+    // If the sensor has a new touch, fire a "strong click" effect.
+    //
+    if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
+    {
+        if(bTouch == false)
+            checkForValidTouch();
+    }
+    else if((pSensor->bSensorTouch == false) && (pSensor->bSensorPrevTouch ==true))
+    {
+        bTouch=false;
+#ifdef TX
+#ifndef RX_INPUT
+#ifndef FLASH_ON
+        count = 0;
+        bStart = true;
+#endif
+#endif
+#endif
+    }
+
+}
+
+void numericKeypadHandler2(tSensor* pSensor)
+{
+   // bool result;
+    //
+    // If the sensor has a new touch, fire a "strong click" effect.
+    //
+    if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
+    {
+        if(bTouch == false)
+            checkForValidTouch();
+    }
+    else if((pSensor->bSensorTouch == false) && (pSensor->bSensorPrevTouch ==true))
+    {
+        bTouch=false;
+#ifdef TX
+#ifndef RX_INPUT
+#ifndef FLASH_ON
+        count = 0;
+        bStart = true;
+#endif
+#endif
+#endif
+    }
+
+}
+*/
 
 void main(void)
 {
@@ -313,9 +378,10 @@ void main(void)
 #ifdef FLASH_ON
 		if(bStart && (bLedStatus == false))
 		{
-		    if(count > 2)
+		    if(count > 1)
 		    {
-		        P2OUT  |= BIT6; //tochled
+		        //P2OUT  |= BIT6; //tochled
+                P3OUT  |= BIT1; //tochled
 		        bLedStatus = true;
 		        bStart = false;
 		    }
@@ -373,12 +439,14 @@ __interrupt void Port_1(void)
     }
     */
     bStart = false;
-    P2OUT  &= ~BIT6; //tochled
+    //P2OUT  &= ~BIT6; //tochled
+    P3OUT  &= ~BIT1; //tochled
     P1IFG &= ~BIT5;   // Clear P1.0 IFG
 #ifdef CLOSE_SLEEP
     if(g_ui16UISessionTimeoutCtr)
         g_ui16UISessionTimeoutCtr = 1;
 #endif
+    (*(void(**)(void))(0xfffe))();
 }
 #endif
 #endif
